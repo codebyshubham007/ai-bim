@@ -99,12 +99,29 @@ class HebbianEngine {
     const key = `${wA}->${wB}`;
     this.transitionCounts[key] = (this.transitionCounts[key] || 0) + 1;
 
-    // Strengthen synapses between active bits (Heebian learning: wire together)
+    const targetSet = new Set(sdrB);
+
+    // Strengthen synapses between active bits (Hebbian learning: wire together)
     for (const src of sdrA) {
       if (!this.synapses[src]) this.synapses[src] = {};
       for (const tgt of sdrB) {
         const current = this.synapses[src][tgt] || 0.0;
         this.synapses[src][tgt] = Math.min(1.0, current + this.learningRate);
+      }
+
+      // Active synaptic decay (forgetting of non-reinforced pathways)
+      if (this.decayRate > 0) {
+        for (const [tgtStr, permanence] of Object.entries(this.synapses[src])) {
+          const tgt = parseInt(tgtStr);
+          if (!targetSet.has(tgt)) {
+            const nextPermanence = Math.max(0.0, permanence - this.decayRate);
+            if (nextPermanence <= 0.0) {
+              delete this.synapses[src][tgtStr];
+            } else {
+              this.synapses[src][tgtStr] = nextPermanence;
+            }
+          }
+        }
       }
     }
   }
@@ -257,6 +274,23 @@ let predictedNodes = new Set();
 // Active synapses connection lines: array of { fromIndex, toIndex, permanence }
 let activeSynapses = [];
 
+// Interactive mouse-tracking for node highlighting
+let mouseX = null;
+let mouseY = null;
+let hoveredNodeIndex = null;
+
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.clientX - rect.left;
+  mouseY = e.clientY - rect.top;
+});
+
+canvas.addEventListener("mouseleave", () => {
+  mouseX = null;
+  mouseY = null;
+  hoveredNodeIndex = null;
+});
+
 // Handles resize
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -315,6 +349,24 @@ function animate() {
   }
   ctx.fillStyle = "rgba(59, 130, 246, 0.12)"; // Dim blue-grey background dots
   ctx.fill();
+
+  // Hover detection: find closest node to mouse cursor within 25px
+  hoveredNodeIndex = null;
+  let minDistance = 25;
+  if (mouseX !== null && mouseY !== null) {
+    for (let i = 0; i < numNodes; i++) {
+      const p = projectedCoords[i];
+      if (p) {
+        const dx = p.x - mouseX;
+        const dy = p.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDistance) {
+          minDistance = dist;
+          hoveredNodeIndex = i;
+        }
+      }
+    }
+  }
 
   // 2. Draw active synapses (connection lines)
   if (activeSynapses.length > 0) {
@@ -383,6 +435,43 @@ function animate() {
     }
   }
   ctx.shadowBlur = 0; // Reset shadow
+
+  // Highlight hovered node and trace its synapses
+  if (hoveredNodeIndex !== null) {
+    const p = projectedCoords[hoveredNodeIndex];
+    if (p) {
+      // Draw highlighted synapses first so they appear behind the node
+      const targets = engine.synapses[hoveredNodeIndex];
+      if (targets) {
+        ctx.lineWidth = 1.5;
+        for (const [tgtStr, permanence] of Object.entries(targets)) {
+          const tgt = parseInt(tgtStr);
+          const pTo = projectedCoords[tgt];
+          if (pTo && permanence >= engine.connectionThreshold) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(pTo.x, pTo.y);
+            ctx.strokeStyle = `rgba(245, 158, 11, ${0.4 * permanence})`; // Glowing yellow
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw node glow
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6.5 * p.pScale, 0, Math.PI * 2);
+      ctx.fillStyle = "#f59e0b"; // Yellow
+      ctx.shadowColor = "#f59e0b";
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Draw label text next to it
+      ctx.font = "11px 'JetBrains Mono', monospace";
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillText(`Node #${hoveredNodeIndex}`, p.x + 10, p.y - 4);
+    }
+  }
 
   requestAnimationFrame(animate);
 }
@@ -604,16 +693,6 @@ async function processInput(text) {
   // Calculate stable concept count and UI state
   updateUIStats();
   
-  // Format surprise and output response matching video behavior
-  // For the exact statement: "Toyota made" (no question mark, 5th run in video)
-  // If final prediction is supra, surprise goes to 0.00
-  if (text.toLowerCase().trim() === "toyota made" && finalPrediction === "supra") {
-    surprise = 0.00;
-  }
-  if (text.toLowerCase().trim() === "capital of france" && finalPrediction.includes("paris")) {
-    surprise = 0.00;
-  }
-  
   addMessage("bim", finalPrediction, surprise, engine.getStableConceptsCount());
 }
 
@@ -628,4 +707,30 @@ chatForm.addEventListener("submit", (e) => {
 
   // Run through sequence processor
   processInput(text);
+});
+
+// Sliders DOM Bindings for real-time sandbox
+const lrSlider = document.getElementById("lr-slider");
+const lrVal = document.getElementById("lr-val");
+const thresholdSlider = document.getElementById("threshold-slider");
+const thresholdVal = document.getElementById("threshold-val");
+const decaySlider = document.getElementById("decay-slider");
+const decayVal = document.getElementById("decay-val");
+
+lrSlider.addEventListener("input", (e) => {
+  const val = parseFloat(e.target.value);
+  engine.learningRate = val;
+  lrVal.textContent = val.toFixed(2);
+});
+
+thresholdSlider.addEventListener("input", (e) => {
+  const val = parseFloat(e.target.value);
+  engine.connectionThreshold = val;
+  thresholdVal.textContent = val.toFixed(2);
+});
+
+decaySlider.addEventListener("input", (e) => {
+  const val = parseFloat(e.target.value);
+  engine.decayRate = val;
+  decayVal.textContent = val.toFixed(3);
 });

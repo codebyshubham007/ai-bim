@@ -45,7 +45,7 @@
             type="text" 
             class="chat-input" 
             id="chat-input" 
-            placeholder="Type a sentence (e.g. 'Toyota made supra')..." 
+            placeholder="Type a sentence (e.g. 'apple is sweet')..." 
             autocomplete="off" 
             required
           >
@@ -80,14 +80,40 @@
           <div class="plasticity-status ready" id="plasticity-status">READY</div>
         </div>
 
+        <!-- Interactive Controls -->
+        <div class="controls-box">
+          <h3>Network Parameters</h3>
+          <div class="control-slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Learning Rate</span>
+              <span class="slider-val" id="lr-val">0.34</span>
+            </div>
+            <input type="range" class="control-slider" id="lr-slider" min="0.05" max="1.0" step="0.01" value="0.34">
+          </div>
+          <div class="control-slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Connection Threshold</span>
+              <span class="slider-val" id="threshold-val">0.50</span>
+            </div>
+            <input type="range" class="control-slider" id="threshold-slider" min="0.1" max="0.9" step="0.01" value="0.50">
+          </div>
+          <div class="control-slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Active Synaptic Decay</span>
+              <span class="slider-val" id="decay-val">0.02</span>
+            </div>
+            <input type="range" class="control-slider" id="decay-slider" min="0.0" max="0.1" step="0.005" value="0.02">
+          </div>
+        </div>
+
         <!-- How it works box -->
         <div class="info-box">
           <h3>How to Interact</h3>
           <p>This is a biologically inspired online learning network. You can teach it relationships in real-time:</p>
           <ul>
-            <li>Type <strong>"Toyota made supra"</strong> and press enter.</li>
+            <li>Type <strong>"apple is sweet"</strong> and press enter.</li>
             <li>Repeat it <strong>3 times</strong> to wire the synapses. Watch Hebbian Plasticity transition to <strong>WIRING...</strong> and then <strong>STABLE</strong>.</li>
-            <li>Once stable, query the model by typing <strong>"Toyota made?"</strong> (with a ?) or <strong>"Toyota made"</strong> to see it predict <strong>"supra"</strong> with zero surprise!</li>
+            <li>Once stable, query the model by typing <strong>"apple is?"</strong> (with a ?) or <strong>"apple is"</strong> to see it predict <strong>"sweet"</strong> with zero surprise!</li>
           </ul>
         </div>
 

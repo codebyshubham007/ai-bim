@@ -48,17 +48,20 @@ The sequence memory is governed by Hebbian learning: *"Cells that fire together,
   $$\text{synapses}[\text{source\_bit}][\text{target\_bit}] = \text{permanence}$$
   where $\text{permanence} \in [0.0, 1.0]$.
 * `vocabulary`: A `Set` tracking all cleaned words processed by the engine.
-* `transitionCounts`: A dictionary mapping transition pairs (e.g., `"toyota->made"`) to frequency counts.
+* `transitionCounts`: A dictionary mapping transition pairs (e.g., `"apple->is"`) to frequency counts.
 
-#### Learning Logic
+#### Learning Logic & Forgetting (Synaptic Decay)
 When learning a transition from $Word_A$ to $Word_B$:
 1. Clean and register both words in the vocabulary.
 2. Obtain SDR active bits $SDR_A$ and $SDR_B$.
 3. Increment transition counts: $key = \text{"}Word_A \rightarrow Word_B\text{"}$.
-4. Update synapses: For every source bit $src \in SDR_A$ and target bit $tgt \in SDR_B$:
+4. **Strengthen Active Synapses:** For every source bit $src \in SDR_A$ and target bit $tgt \in SDR_B$, increment the synaptic weight:
    $$\text{permanence}_{new} = \min(1.0, \text{permanence}_{old} + \eta)$$
-   where learning rate $\eta = 0.34$.
-*(Note: A `decayRate` of $0.02$ is declared in the constructor but is not actively decremented during learning in the current codebase).*
+   where $\eta$ is the learning rate (default $0.34$).
+5. **Decay Inactive Synapses (Forgetting):** If the decay rate $\delta > 0$, then for every active source bit $src \in SDR_A$, any previously connected target bit $tgt\_old$ that is *not* active in $SDR_B$ has its weight decayed:
+   $$\text{permanence}_{new} = \max(0.0, \text{permanence}_{old} - \delta)$$
+   where $\delta$ is the decay rate (default $0.02$).
+6. **Synaptic Pruning:** If a synapse's permanence decays to $\le 0.0$, it is completely deleted from the sparse synapse dictionary `synapses[src]` to optimize memory and keep connections highly sparse.
 
 #### Prediction Logic
 To predict the next word given a current word:
@@ -109,6 +112,21 @@ For each animation frame, coordinates are rotated around the X and Y axes:
   * Previous Active SDR: Violet circles (`rgba(139, 92, 246, 0.7)`).
   * Current Active SDR: Pulsing cyan circles (`#06b6d4`) with shadow blur.
   * Predicted SDR: Bright green circles (`#10b981`) with shadow blur.
+* **Interactive Hover States:**
+  * Displays a glowing yellow node (`#f59e0b` with 15px shadow blur) when the cursor gets within $25\text{px}$ Euclidean distance of its 2D projected coordinate:
+    $$d = \sqrt{(px - mouse_x)^2 + (py - mouse_y)^2}$$
+  * Draws a text label next to the node (e.g., `Node #ID`) in `JetBrains Mono` font.
+  * Dynamically traces outgoing connections from the hovered node to all target nodes where the synapse permanence meets the connection threshold, rendering them as glowing yellow lines.
+
+---
+
+## ⚙️ Interactive Controls & Sandbox Bindings
+
+To allow real-time parameter tuning, the UI incorporates input range sliders that directly map to the Hebbian Engine instance parameters via event listeners:
+
+1. **Learning Rate Slider (`#lr-slider`):** Updates `engine.learningRate` (bounds: $0.05$ to $1.00$). Higher values lead to faster synapse wiring (reaching `STABLE` in fewer repetitions) but risk fast overwriting.
+2. **Connection Threshold Slider (`#threshold-slider`):** Updates `engine.connectionThreshold` (bounds: $0.10$ to $0.90$). Determines the minimum synapse permanence required for target bit excitation. Lowering it increases prediction sensitivity; raising it increases prediction selectivity.
+3. **Active Synaptic Decay Slider (`#decay-slider`):** Updates `engine.decayRate` (bounds: $0.00$ to $0.10$). Controls the forgetting rate of unreinforced connections, allowing the network to prune inactive paths in real-time.
 
 ---
 
@@ -123,5 +141,4 @@ When the user submits a sentence (e.g., `"A B C"`):
    * Pause execution for $400\text{ms}$ (`sleep(400)`) to display the visual flow.
 3. At the end of the sentence:
    * Performs a multi-step prediction (up to 3 steps). If the predicted word is a common grammatical stop-word (e.g., *is, of, the, to, in, are*), it feeds the prediction back as input to look ahead to the next content word.
-   * Special-case overrides are applied to force surprise to $0.00$ for exact demo matches (`"toyota made" -> "supra"`, `"capital of france" -> "paris"`).
    * Displays the final predicted word in the chat panel.

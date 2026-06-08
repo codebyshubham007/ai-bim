@@ -1,5 +1,7 @@
 # BIM 2: Biologically Inspired Model
 
+⭐ **If you find this project helpful or educational, please consider giving it a star!**
+
 BIM 2 is a lightweight, local-first, biologically inspired sequence learning network and interactive 3D neural visualizer. It runs entirely in the browser using vanilla HTML, CSS, and JavaScript.
 
 The model leverages concepts from Hierarchical Temporal Memory (HTM), Sparse Distributed Representations (SDR), and Hebbian learning ("cells that fire together, wire together") to learn sequential relationships between words in real-time and predict future sequences with zero server-side dependencies.
@@ -9,8 +11,11 @@ The model leverages concepts from Hierarchical Temporal Memory (HTM), Sparse Dis
 ## 🌟 Key Features
 
 * **3D Neural Visualizer:** A real-time rendering of $16,384$ neurons distributed across a Fibonacci sphere. Active, previous, and predicted neural states are represented with color-coded pulsing glows.
+* **Interactive Sandbox & Parameter Sliders:** Real-time controls to adjust Hebbian Learning Rate, Connection Threshold, and Active Synaptic Decay, allowing users to test network plasticity dynamics instantly.
+* **Mouse Hover Node & Synapse Tracing:** Hovering over any node on the rotating 3D canvas lights it up in glowing yellow, shows its node ID, and traces all its outgoing connected synapses in real-time.
+* **Active Synaptic Decay (Forgetting):** Pragmatically prunes unreinforced pathways over time depending on the decay setting, simulating biological forgetting and preventing network saturation.
 * **Hebbian Plasticity Engine:** Dynamically wires synapses in real-time as you type. Watch the learning state progress from `READY` to `WIRING...` and finally to `STABLE` as sequences are repeated.
-* **Predictive Sequencing:** Recognizes and completes learned sequences (e.g., query `"Toyota made?"` to predict `"supra"`).
+* **Predictive Sequencing:** Recognizes and completes learned sequences (e.g., query `"apple is?"` to predict `"sweet"`).
 * **Multi-Step Look-Ahead:** Traverses grammatical stop-words (e.g., *is*, *of*, *the*) to predict the next meaningful content word.
 * **Deterministic SDRs:** Maps text input into high-dimensional sparse representations ($16,384$ dimensions, $64$ active bits, $\approx 0.39\%$ sparsity) using a deterministic hashing algorithm.
 * **Surprise Metric:** Outputs a real-time surprise score ($0.0$ to $1.0$) based on SDR overlap between prediction and actual input.
@@ -19,12 +24,19 @@ The model leverages concepts from Hierarchical Temporal Memory (HTM), Sparse Dis
 
 ## 🚀 Quick Start
 
-Since BIM 2 is built with vanilla web technologies, there is no build step or package installation required.
+First, clone the repository and navigate into the project directory:
+
+```bash
+# Clone the repository
+git clone https://github.com/codebyshubham007/ai-bim.git
+
+# Navigate into the project folder
+cd ai-bim
+```
 
 ### Option 1: Double-Click
-1. Clone or download this repository.
-2. Navigate to the project directory.
-3. Double-click [index.html](file:///d:/ai-bim/index.html) to open the application directly in any modern web browser.
+1. Open the project folder in your file manager.
+2. Double-click [index.html](file:///d:/ai-bim/index.html) to open the application directly in any modern web browser.
 
 ### Option 2: Local Server (Recommended)
 To run the project via a local development server (e.g., using Python, Node.js, or VS Code Live Server):
@@ -46,17 +58,17 @@ npx http-server -p 8000
 
 You can teach the network relationships in real-time:
 
-1. **Input a Sequence:** Type a simple sequence such as `"Toyota made supra"` and press **Send** (or press `Enter`).
+1. **Input a Sequence:** Type a simple sequence such as `"apple is sweet"` and press **Send** (or press `Enter`).
 2. **Observe the Visualization:**
    * Active nodes representing the current word pulse in **Cyan**.
    * Previous nodes fade to **Purple**.
    * Synaptic lines show orange pathways during the learning phase.
-3. **Repeat to Wire (3x):** Enter the exact same sequence `"Toyota made supra"` **three times**. You will see:
+3. **Repeat to Wire (3x):** Enter the exact same sequence `"apple is sweet"` **three times**. You will see:
    * Hebbian Plasticity state change: `READY` $\rightarrow$ `WIRING...` $\rightarrow$ `STABLE`.
    * The number of **Concepts Formed** increases to `1`.
 4. **Query the Model:**
-   * Type `"Toyota made"` (or `"Toyota made?"`) and hit Enter.
-   * The model will predict **"supra"** with **$0.00$ surprise**.
+   * Type `"apple is"` (or `"apple is?"`) and hit Enter.
+   * The model will predict **"sweet"** with **$0.00$ surprise**.
    * Predicted nodes and stable synaptic paths will glow in **Green**.
 
 ---
