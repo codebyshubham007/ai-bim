@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIM 2 - Biologically Inspired Model</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Fullscreen Neural Visualizer Canvas -->
+  <canvas id="neural-canvas"></canvas>
+
+  <!-- Floating BIM Interaction Window -->
+  <div class="bim-window">
+    <!-- Titlebar resembling Mac/Linux terminal -->
+    <div class="window-titlebar">
+      <div class="window-dots">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div class="window-title">BIM_2_Interaction</div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="window-body">
+      
+      <!-- Chat Panel (Left) -->
+      <div class="chat-panel">
+        <!-- Chat History -->
+        <div class="chat-history" id="chat-history">
+          <div class="message bim">
+            <div class="bim-response">BIM 2 initialized. Ready to receive input.</div>
+            <div class="bim-meta">
+              <span class="meta-surprise">surprise: 0.00</span>
+              <span class="meta-concepts">concepts: 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <form class="chat-input-container" id="chat-form">
+          <input 
+            type="text" 
+            class="chat-input" 
+            id="chat-input" 
+            placeholder="Type a sentence (e.g. 'Toyota made supra')..." 
+            autocomplete="off" 
+            required
+          >
+          <button type="submit" class="send-btn">Send</button>
+        </form>
+      </div>
+
+      <!-- Stats & Controls Panel (Right) -->
+      <div class="stats-panel">
+        
+        <!-- SDR Dimensions -->
+        <div class="stat-group">
+          <span class="stat-label">SDR Dimensions</span>
+          <span class="stat-value" id="sdr-dimensions-val">16,384</span>
+        </div>
+
+        <!-- Active Bits -->
+        <div class="stat-group">
+          <span class="stat-label">Active Bits</span>
+          <span class="stat-value" id="active-bits-val">64</span>
+        </div>
+
+        <!-- Concepts Formed -->
+        <div class="stat-group">
+          <span class="stat-label">Concepts Formed</span>
+          <span class="stat-value glow-cyan" id="concepts-val">0</span>
+        </div>
+
+        <!-- Plasticity Status -->
+        <div class="stat-group">
+          <span class="stat-label">Hebbian Plasticity</span>
+          <div class="plasticity-status ready" id="plasticity-status">READY</div>
+        </div>
+
+        <!-- How it works box -->
+        <div class="info-box">
+          <h3>How to Interact</h3>
+          <p>This is a biologically inspired online learning network. You can teach it relationships in real-time:</p>
+          <ul>
+            <li>Type <strong>"Toyota made supra"</strong> and press enter.</li>
+            <li>Repeat it <strong>3 times</strong> to wire the synapses. Watch Hebbian Plasticity transition to <strong>WIRING...</strong> and then <strong>STABLE</strong>.</li>
+            <li>Once stable, query the model by typing <strong>"Toyota made?"</strong> (with a ?) or <strong>"Toyota made"</strong> to see it predict <strong>"supra"</strong> with zero surprise!</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
